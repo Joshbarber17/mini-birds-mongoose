@@ -1,18 +1,10 @@
 var mongoose = require('mongoose')
 var Schema = mongoose.Schema;
+var birdSchema = require('./bird')
 
 var sightingsSchema = new Schema ({
-  name: {type: String, lowercase: true},
-  order: {type: String, lowercase: true, maxlength: 20},
-  status: {
-    type: String,
-    lowercase: true,
-    enum: [
-      "extinct",
-      "near threatened",
-      "least concern"
-    ]
-  },
+  user: {type: String, ref: "User"}, //don't need to require the user collection because of ref
+  birds: [birdSchema],
   confirmed: {type: Boolean, default: false},
   numberSeen: {type: Number, min: 1}
 });

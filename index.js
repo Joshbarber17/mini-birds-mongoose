@@ -9,12 +9,25 @@ app.use(cors());
 app.listen(port, function(){
   console.log("listening on port " + port)
 })
-mongoose.connect('mongodb://localhost/more-fun'); //how to connect to my database via mongoose
+mongoose.connect('mongodb://localhost/even-more-fun'); //how to connect to my database via mongoose
 mongoose.connection.once('open', function(){ //once the connectino is open, call this callback function
   console.log("connected to MongoDB")
 });
 
 var Sighting = require('./sightings');
+var User = require('./user')
+
+app.post('/api/users', function(req, res, next){
+  var user = new User(req.body);
+  user.save(function(err, response){
+    if (err) {
+      return res.status(500).send(err)
+    }
+    else {
+      res.send(response)
+    }
+  })
+})
 
 app.get('/api/sighting', function(req, res, next){
   if (req.query.species) {
@@ -23,7 +36,7 @@ app.get('/api/sighting', function(req, res, next){
     })
   }
   else if (req.query.order) {
-    Sighting.find(req.query, function(err, response){
+    Sighting.find(req.query).populate("user").exec(function(err, response){
       if (response.length < 1) {
         res.status(500).send("order does not exist")
       }
@@ -33,11 +46,13 @@ app.get('/api/sighting', function(req, res, next){
     })
   }
   else {
-    Sighting.find(function(err, response){
+    Sighting.find().populate('user').exec(function(err, response){
       res.status(200).send(response)
     })
   }
 })
+
+
 app.post('/api/sighting', function(req, res, next){
   var sighting = new Sighting(req.body)
   sighting.save(function (err, s){
